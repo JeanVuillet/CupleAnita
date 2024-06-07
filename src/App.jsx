@@ -7,39 +7,102 @@ import { faArrowRotateRight, faArrowRotateLeft } from '@fortawesome/free-solid-s
 function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
-  const [forwardRate, setForwardRate] = useState(10); // Valeur par défaut pour avance rapide
-  const [backwardRate, setBackwardRate] = useState(10); // Valeur par défaut pour retour rapide
-  const [seekTime, setSeekTime] = useState(0); // Champ de sélection pour le temps de recherche
+  const [forwardRate, setForwardRate] = useState(10);
+  const [backwardRate, setBackwardRate] = useState(10);
   const [player, setPlayer] = useState(null);
+  const [visibleList, setVisibleList] = useState(false); // Afficher ou masquer la liste des protagonistes
 
+  const people1 = [
+    { name:'Todos',time:0 },
+    { name: 'Tía Rossy y Tío Andres', time: 0 },
+    { name: 'Cristian y Dayana', time: 11 },
+    { name: 'Don Robert', time: 17 },
+    { name: 'Ginger', time: 36 },
+    { name: 'Familia de Quito', time: 52 },
+    { name: 'Ricci', time: 64 },
+    { name: 'Tío Cecar', time: 71 },
+    { name: 'Cheche y Tía Rosana', time: 77 },
+    { name: 'Juan Pablo y su familia', time: 87 },
+    { name: 'Tía Ana Emilia y Renato', time: 96 },
+    { name: 'Don Didier', time: 152 },
+    { name: 'Dona Raquel', time: 167 },
+    { name: 'Valeria y Elisabeth', time: 174 },
+    { name: 'Andreita', time: 207 },
+    { name: 'Victor', time: 230 },
+    { name: 'David', time: 272 },
+    { name: 'Amiga Manaba', time: 293 },
+    { name: 'Santiago', time: 339 },
+    { name: 'Tiffany', time: 359 },
+    { name: 'Dona Loly', time: 407 },
+    { name: 'Lenin', time: 453 },
+  ];
+
+  const people2 = [
+    { name: 'Manuelita', time: 474 },
+    { name: 'Murya', time: 484 },
+    { name: 'Edwin y Lolita', time: 507 },
+    { name: 'Belen', time: 566 },
+    { name: 'Cindy', time: 579 },
+    { name: 'Mafer', time: 601 },
+    { name: 'Analia', time: 638 },
+    { name: 'Dona Ceci', time: 659 },
+    { name: 'Dona Vicky', time: 668 },
+    { name: 'Federico y Romeo', time: 698 },
+    { name: 'Amiga de Manabi', time: 717 },
+    { name: 'Anita Victoria', time: 740 },
+    { name: 'Tito', time: 746 },
+    { name: 'Max', time: 755 },
+    { name: 'Tiana', time: 758 },
+    { name: 'Myriam y Bruno', time: 767 },
+    { name: 'Roberto', time: 817 },
+    { name: 'Ana Ligia', time: 833 },
+    { name: 'Tifany', time: 867 },
+  ];
+ 
+  const allPeople = [...people1, ...people2];
+
+  const renderPersonOptions = (list) => {
+    return list.map((person, index) => (
+      <div key={index} onClick={() => goToTime(person.time)} className="person">
+        {person.name}
+      </div>
+    ));
+  };
+
+  const renderSelectOptions = () => {
+    return allPeople.map((person, index) => (
+      <option key={index} value={person.time}>
+        {person.name}
+      </option>
+    ));
+  };
+  
   const onPlayerReady = (event) => {
     setPlayer(event.target);
-    event.target.setPlaybackRate(playbackRate); // Assurez-vous que la vitesse initiale est définie
+    event.target.setPlaybackRate(playbackRate);
+    // Injection du script pour fermer automatiquement les pubs
+    event.target.getIframe().contentWindow.postMessage('{"event":"command","func":"mute","args":""}', '*');
+    setInterval(() => {
+      event.target.getIframe().contentWindow.postMessage('{"event":"command","func":"skipAd","args":""}', '*');
+    }, 1000);
   };
 
   const handlePlayPause = () => {
     if (isPlaying) {
       player.pauseVideo();
     } else {
+      player.setVolume(100); // Réglez le volume au maximum (100)
+      player.unMute(); // Activer le son
       player.playVideo();
+   
     }
     setIsPlaying(!isPlaying);
   };
-
-
 
   const handleSkip = (seconds) => {
     const currentTime = player.getCurrentTime();
     player.seekTo(currentTime + seconds, true);
   };
-
-  const handleSeekTimeChange = (e) => {
-    const newTime = parseInt(e.target.value, 10);
-    setSeekTime(newTime);
-    player.seekTo(newTime, true);
-  };
-
-
 
   const handleForwardRate = (e) => {
     const newRate = parseInt(e.target.value, 10);
@@ -51,6 +114,14 @@ function App() {
     setBackwardRate(newRate);
   };
 
+  const goToTime = (time) => {
+    player.seekTo(time, true);
+  };
+
+  const toggleVisibleList = () => {
+    setVisibleList(!visibleList); // Inverser la visibilité de la liste des protagonistes
+  };
+
   return (
     <>
       <header className="headerBox">
@@ -60,18 +131,31 @@ function App() {
       <main className='main'>
         <div className='mensaje'>De la parte de tus seres queridos con mucho amor</div>
         <div className="container">
+        <div className="masterBox">
+        <div className="lista1">
+                {visibleList ? renderPersonOptions(people1) : null}
+              </div>
+
           <YouTube
-            videoId="alDg43DA2HU" // Remplacez par l'ID de votre vidéo YouTube
+            className='vido-container'
+            videoId="opk5C6K1zuU"
             opts={{
-              height: '390',
-              width: '640',
               playerVars: {
                 autoplay: 0,
               },
             }}
             onReady={onPlayerReady}
           />
+                <div className="lista2">
+                {visibleList ? renderPersonOptions(people2) : null}
+              </div>
+       
+    
+              </div>
+
           <div className="controls">
+            <div className="regular">
+            <div className="p1">
             <select value={backwardRate} onChange={handleBackwardRate}>
               <option value={10}>10sec</option>
               <option value={20}>20sec</option>
@@ -80,7 +164,7 @@ function App() {
               <option value={120}>2min</option>
               <option value={180}>3min</option>
             </select>
-            <button onClick={() => handleSkip(-backwardRate)}><FontAwesomeIcon icon={faArrowRotateLeft} /> </button>
+            <button onClick={() => handleSkip(-backwardRate)}><FontAwesomeIcon icon={faArrowRotateLeft} /></button>
 
             <button onClick={handlePlayPause}>
               {isPlaying ? 'Pause' : 'Play'}
@@ -95,58 +179,31 @@ function App() {
               <option value={120}>2min</option>
               <option value={180}>3min</option>
             </select>
-            <label>
-             
-            </label>
-        
-            <label>
-            Los mensajes:
-              <select value={seekTime} onChange={handleSeekTimeChange}>
-                <option value={0}>Tía Rossy y Tío Andres</option>
-                <option value={11}>Cristian y Dayana</option>
-                <option value={17}>Don Robert</option>
-                <option value={36}>Ginger</option>
-                <option value={52}>Familia de Quito</option>
-                <option value={64}>Ricci</option>
-                <option value={71}>Tío Cecar</option>
-                <option value={77}>Cheche y Tía Rosana</option>
-                <option value={87}>Juan Pablo y su familia</option>
-                <option value={96}>Tía Ana Emilia y Renato</option> 
-                 <option value={152}>Don Didier</option>  
-                 <option value={167}>Dona Raquel</option>  
-                 <option value={174}>Valeria y Elisabeth</option>
-                 <option value={207}>Andreita</option>
-                 <option value={230}>Victor</option>
-                <option value={272}>David</option> 
-                 <option value={293}>Amiga Manaba</option>  
-                 <option value={339}>Santiago</option>  
-                 <option value={359}>Tiffany</option>
-                 <option value={407}>Dona Loly</option>
-                 <option value={453}>Lenin</option>
-                 <option value={474}>Manuelita</option>
-                 <option value={484}>Murya</option>
-                 <option value={507}>Edwin y Lolita</option>
-                 <option value={566}>Belen</option>
-                 <option value={579}>Cindy</option>
-                 <option value={601}>Mafer</option>
-                 <option value={638}>Analia</option>
-                 <option value={659}>Dona Ceci</option>
-                 <option value={668}>Dona Vicky</option>
-                 <option value={698}>Federico y Romeo</option>
-                 <option value={717}>Amiga de Manabi</option>
-                 <option value={740}>Anita Victoria</option>
-                 <option value={746}>Tito</option>
-                 <option value={755}>Max</option>
-                 <option value={758}>Tiana</option>
-                 <option value={767}>La Embajadora Esparsa y Bruno</option>
-                 <option value={817}>Roberto</option>
-                 <option value={833}>Ana Ligia</option>
-                 <option value={867}>Tifany</option>
-              </select>
-            </label>
+            </div>
+            <div className="p2">
+            <div className="protagonistas" onClick={toggleVisibleList}>{visibleList ? "Ocultar" : "Los Protagonistas"}</div>
+            </div>
           </div>
+          </div>
+
+        
         </div>
       </main>
+      <footer>
+      <div className="cell">
+        <div >
+          <button className="button"onClick={handlePlayPause}>
+              {isPlaying ? 'Pause' : 'Play'}
+            </button>
+            </div>
+            <div className="selector">
+        
+            <select className="select" defaultValue={'Protagonistas'} onChange={(e) => goToTime(parseInt(e.target.value, 10))}>
+            {renderSelectOptions()}
+            </select>
+            </div>
+            </div> 
+      </footer>
     </>
   );
 }
