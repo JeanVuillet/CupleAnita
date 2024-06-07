@@ -53,10 +53,10 @@ function App() {
     { name: 'Tito', time: 746 },
     { name: 'Max', time: 755 },
     { name: 'Tiana', time: 758 },
-    { name: 'Myriam y Bruno', time: 767 },
-    { name: 'Roberto', time: 817 },
-    { name: 'Ana Ligia', time: 833 },
-    { name: 'Tifany', time: 867 },
+    { name: 'Roberto', time: 769 },
+    { name: 'Ana Ligia', time: 782 },
+    { name: 'Tifany', time: 816 },
+    { name: 'Myriam y Bruno', time: 842 },
   ];
 
   const allPeople = [...people1, ...people2];
