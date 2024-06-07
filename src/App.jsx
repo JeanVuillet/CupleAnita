@@ -13,7 +13,7 @@ function App() {
   const [visibleList, setVisibleList] = useState(false); // Afficher ou masquer la liste des protagonistes
 
   const people1 = [
-    { name:'Todos',time:0 },
+    { name: 'Todos', time: 0 },
     { name: 'Tía Rossy y Tío Andres', time: 0 },
     { name: 'Cristian y Dayana', time: 11 },
     { name: 'Don Robert', time: 17 },
@@ -33,11 +33,11 @@ function App() {
     { name: 'Amiga Manaba', time: 293 },
     { name: 'Santiago', time: 339 },
     { name: 'Tiffany', time: 359 },
-    { name: 'Dona Loly', time: 407 },
-    { name: 'Lenin', time: 453 },
   ];
 
   const people2 = [
+    { name: 'Dona Loly', time: 407 },
+    { name: 'Lenin', time: 453 },
     { name: 'Manuelita', time: 474 },
     { name: 'Murya', time: 484 },
     { name: 'Edwin y Lolita', time: 507 },
@@ -58,7 +58,7 @@ function App() {
     { name: 'Ana Ligia', time: 833 },
     { name: 'Tifany', time: 867 },
   ];
- 
+
   const allPeople = [...people1, ...people2];
 
   const renderPersonOptions = (list) => {
@@ -76,14 +76,17 @@ function App() {
       </option>
     ));
   };
-  
+
   const onPlayerReady = (event) => {
-    setPlayer(event.target);
-    event.target.setPlaybackRate(playbackRate);
+    const player = event.target;
+    setPlayer(player);
+    player.setPlaybackRate(playbackRate);
+    player.setVolume(100); // Régler le volume au maximum
+    player.unMute(); // Activer le son
     // Injection du script pour fermer automatiquement les pubs
-    event.target.getIframe().contentWindow.postMessage('{"event":"command","func":"mute","args":""}', '*');
+    player.getIframe().contentWindow.postMessage('{"event":"command","func":"skipAd","args":""}', '*');
     setInterval(() => {
-      event.target.getIframe().contentWindow.postMessage('{"event":"command","func":"skipAd","args":""}', '*');
+      player.getIframe().contentWindow.postMessage('{"event":"command","func":"skipAd","args":""}', '*');
     }, 1000);
   };
 
@@ -91,10 +94,7 @@ function App() {
     if (isPlaying) {
       player.pauseVideo();
     } else {
-      player.setVolume(100); // Réglez le volume au maximum (100)
-      player.unMute(); // Activer le son
       player.playVideo();
-   
     }
     setIsPlaying(!isPlaying);
   };
@@ -131,31 +131,34 @@ function App() {
       <main className='main'>
         <div className='mensaje'>De la parte de tus seres queridos con mucho amor</div>
         <div className="container">
-        <div className="masterBox">
-        <div className="lista1">
-                {visibleList ? renderPersonOptions(people1) : null}
-              </div>
+          <div className="masterBox">
+            <div className="lista1">
+              {visibleList ? renderPersonOptions(people1) : null}
+            </div>
 
-          <YouTube
-            className='vido-container'
-            videoId="opk5C6K1zuU"
-            opts={{
-              playerVars: {
-                autoplay: 0,
-              },
-            }}
-            onReady={onPlayerReady}
-          />
-                <div className="lista2">
-                {visibleList ? renderPersonOptions(people2) : null}
-              </div>
-       
-    
-              </div>
+            <YouTube
+              className='vido-container'
+              videoId="opk5C6K1zuU"
+              opts={{
+                playerVars: {
+                  autoplay: 1, // Autoplay pour démarrer la vidéo automatiquement
+                  mute: 0, // Désactiver la mise en sourdine par défaut
+                },
+              }}
+              onReady={onPlayerReady}
+            />
+            <div className="lista2">
+              {visibleList ? renderPersonOptions(people2) : null}
+            </div>
+          </div>
 
           <div className="controls">
-            <div className="regular">
-            <div className="p1">
+          </div>
+        </div>
+      </main>
+      <footer>
+        <div className="regular">
+          <div className="p1">
             <select value={backwardRate} onChange={handleBackwardRate}>
               <option value={10}>10sec</option>
               <option value={20}>20sec</option>
@@ -164,13 +167,13 @@ function App() {
               <option value={120}>2min</option>
               <option value={180}>3min</option>
             </select>
-            <button onClick={() => handleSkip(-backwardRate)}><FontAwesomeIcon icon={faArrowRotateLeft} /></button>
+            <button className="skip" onClick={() => handleSkip(-backwardRate)}><FontAwesomeIcon icon={faArrowRotateLeft} /></button>
 
-            <button onClick={handlePlayPause}>
+            <button onClick={handlePlayPause} className='button'>
               {isPlaying ? 'Pause' : 'Play'}
             </button>
 
-            <button onClick={() => handleSkip(forwardRate)}><FontAwesomeIcon icon={faArrowRotateRight} /></button>
+            <button className="skip" onClick={() => handleSkip(forwardRate)}><FontAwesomeIcon icon={faArrowRotateRight} /></button>
             <select value={forwardRate} onChange={handleForwardRate}>
               <option value={10}>10sec</option>
               <option value={20}>20sec</option>
@@ -179,30 +182,23 @@ function App() {
               <option value={120}>2min</option>
               <option value={180}>3min</option>
             </select>
-            </div>
-            <div className="p2">
+          </div>
+          <div className="p2">
             <div className="protagonistas" onClick={toggleVisibleList}>{visibleList ? "Ocultar" : "Los Protagonistas"}</div>
-            </div>
           </div>
-          </div>
-
-        
         </div>
-      </main>
-      <footer>
-      <div className="cell">
-        <div >
-          <button className="button"onClick={handlePlayPause}>
+        <div className="cell">
+          <div>
+            <button className="button" onClick={handlePlayPause}>
               {isPlaying ? 'Pause' : 'Play'}
             </button>
-            </div>
-            <div className="selector">
-        
+          </div>
+          <div className="selector">
             <select className="select" defaultValue={'Protagonistas'} onChange={(e) => goToTime(parseInt(e.target.value, 10))}>
-            {renderSelectOptions()}
+              {renderSelectOptions()}
             </select>
-            </div>
-            </div> 
+          </div>
+        </div>
       </footer>
     </>
   );
